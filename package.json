@@ -1,24 +1,28 @@
 {
-  "name": "nodejs-typescript",
+  "name": "workspace",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.ts",
+  "main": "index.js",
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "keywords": [],
   "author": "",
   "license": "ISC",
-  "dependencies": {
-    "@huggingface/inference": "^4.11.1",
-    "@langchain/community": "^0.3.57",
-    "@langchain/core": "^0.3.78",
-    "@langchain/openai": "^0.6.16",
-    "langchain": "^0.3.36",
-    "node-fetch": "^3.3.1"
-  },
+  "description": "",
   "devDependencies": {
-    "@types/node": "^20.10.0",
-    "tsx": "^4.7.1"
+    "@types/node": "^24.10.0",
+    "@types/react": "^19.2.6",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "@langchain/core": "^1.0.3",
+    "@langchain/ollama": "^1.0.0",
+    "ink": "^6.5.1",
+    "ink-text-input": "^6.0.0",
+    "langchain": "^1.0.3",
+    "react": "^19.2.0"
   }
 }
