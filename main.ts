@@ -17,7 +17,7 @@ import { writeFile, appendFile } from "node:fs/promises";
 import { startUI, getTopic, RunLLM_withUIsync, showVerdictUI } from "./ui.tsx";
 
 const llm = await initChatModel("ollama:llama3.1:8b", {
-  baseUrl: "https://8b949900e22d.ngrok-free.app/",
+  baseUrl: "https://fdb5fd296c9e.ngrok-free.app/",
   temperature: 1,
   numPredict: 600,
   configurableFields: ["format"],
@@ -66,6 +66,8 @@ const systemPrompts = [
    2. **Tone:** Professional, assertive, and fast-paced. Do not be overly polite. Do not say "Thank you for that point." Instead, say "The opponent fails to realize..."
    3. **Consistency:** Never agree with the opposition's core premise. Never admit defeat.
 
+   BANNED PHRASES: Do not use any of the following phrases: "Thank you," "Good point," "I agree," "That is a valid argument," "Respectfully," or any similar acknowledgment. Your tone must be entirely adversarial.
+
    FORMAT:
    - Use Markdown headers (e.g., **Argument 1**) for clarity.
    - Keep your response under 120 words.
@@ -79,6 +81,8 @@ const systemPrompts = [
    1. **No Hallucinations:** Do not invent specific names, dates, or studies. Use logical reasoning and general principles.
    2. **Tone:** Critical, sharp, and analytical. Do not be overly polite. Do not say "I agree with my opponent." Instead, say "My opponent's logic is flawed because..."
    3. **Strategy:** You do not need to prove the status quo is perfect; you just need to prove the Proposition's plan is worse/ineffective.
+
+   BANNED PHRASES: Do not use any of the following phrases: "Thank you," "Good point," "I agree," "That is a valid argument," "Respectfully," or any similar acknowledgment. Your tone must be entirely adversarial.
 
    FORMAT:
    - Use Markdown headers (e.g., **Counter 1**) for clarity.
@@ -198,7 +202,7 @@ const Opposition = async (state: State): Promise<Partial<State>> => {
   const { topic, round, sub_round, max_sub_rounds, messages } = state;
 
   const messages_for_llm: BaseMessage[] = [
-    new SystemMessage(SystemPrompt(topic, 0, round)),
+    new SystemMessage(SystemPrompt(topic, 1, round)),
     ...messages,
   ];
 
@@ -225,6 +229,7 @@ const Opposition = async (state: State): Promise<Partial<State>> => {
 const Judge = async (state: State) => {
   const { messages } = state;
 
+  /*
   const judgePrompt = `
     You are an expert Debate Judge. 
     Analyze the debate transcript below.
@@ -235,9 +240,34 @@ const Judge = async (state: State) => {
     3. Declare the WINNER based on who had better logical impacts (not who was nicer).
     4. Provide a 3-4-sentence reason.
     
+    CRITICAL PENALTIES: Deduct points for: 1) Any form of agreement or
+    concession, 2) Going off-topic or engaging in casual conversation,
+    3) Violating the word count or structural constraints. A debate is
+    won by superior argumentation and impact, not politeness.
+    
     Output JSON format only:
     { "prop_score": number, "opp_score": number, "winner": "Proposition" | "Opposition", "reason": "string" }
-  `;
+  `;*/
+
+const judgePrompt = `
+    You are an expert Debate Judge specializing in **Policy Debate**. Your task is to apply a rigorous standard of proof.
+
+    **RULE 1: BURDEN OF PROOF (CRITICAL)**
+    The **Proposition** must prove that their plan (Mandating a Four-Day Work Week) is **SAFE**, **EQUITABLE**, and will create a **NET POSITIVE OUTCOME** for the economy and all key sectors (healthcare, essential services, low-wage workers). They must resolve all significant challenges raised by the Opposition.
+
+    The **Opposition** only needs to prove that the Proposition's plan has **ONE SIGNIFICANT, UNRESOLVED HARM** that outweighs the alleged benefits. Focus specifically on **Equity, Safety, and Economic Stability**.
+
+    **RULE 2: IMPACT WEIGHING**
+    **Prioritize Arguments about:**
+    1.  **Safety/Public Welfare** (e.g., healthcare staffing, emergency services).
+    2.  **Equity/Harm to Vulnerable Groups** (e.g., pay cuts for hourly workers, small business failure).
+    3.  **Risk** (If the Opposition successfully argues the plan is too risky or impractical, they win).
+
+    **Declare the WINNER based on which side successfully fulfilled its burden of proof.**
+    
+    Output JSON format only:
+    { "prop_score": number, "opp_score": number, "winner": "Proposition" | "Opposition", "reason": "string" }
+`;
 
   const llm_res = await llm.invoke(
     [
